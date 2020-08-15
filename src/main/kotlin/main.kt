@@ -1,62 +1,43 @@
-import drives.google.GoogleDriveService
-import utils.FileInfo
-import utils.UnitType
+import dtos.FileDtoExtender
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.runBlocking
+import services.google.GoogleDriveFlow
+import services.google.GoogleDriveService
+import utils.FileDtoUtils
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-
-const val APPLICATION_NAME = "Save Scratches"
-
-const val postfix = "IntelliJIdea"
-const val dir = ".$postfix"
-
-val intellijIdeaRegex2 = Regex("\\.${postfix}[\\d]{4}\\.[\\d][^.]*")
-
-const val SPLIT_REGEX = "scratches"
+import kotlin.streams.toList
 
 
 fun main() {
 
-    val scratchesSourcesPaths = ScratchesComponent.getScratchesSourcesPaths()
+    GoogleDriveConfigs.initDrivesPluginStash()
 
-    val scratchPathsAndItFiles =
-        scratchesSourcesPaths
-            .map { pathToScratches ->
-                val filesStringPaths = ScratchesComponent.getScratches(pathToScratches)
-                val pathFromIntelliJIdeaDir = dropUserHomePart(pathToScratches, intellijIdeaRegex2)
-                pathToScratches to getFileInfos(filesStringPaths)
-            }.toMap()
+    val uploadDownloadMappings = GoogleDriveConfigs.getUploadDownloadMappings()
 
-    GoogleDriveService.save(scratchPathsAndItFiles)
+    val allUploadDirs =
+        uploadDownloadMappings
+            .map { it.upload }
+            .dropLastWhile { it == "/" }
 
-}
+    val firstDirToUpload = allUploadDirs[0]
+    val walk = Files.walk(Paths.get(firstDirToUpload)).toList()
 
+    val uploadable = GoogleDriveService.isUploadable(walk)
 
-fun dropUserHomePart(pathWithIntelliJIdeaMention: String, regex: Regex): String {
-    val pattern: Pattern = Pattern.compile(regex.pattern)
-    val matcher: Matcher = pattern.matcher(pathWithIntelliJIdeaMention)
-    while (matcher.find()) {
-        return matcher.group().toString()
+    if (uploadable) {
+        val pathAndItFiles = firstDirToUpload to FileDtoUtils.getFileDtos(firstDirToUpload, walk)
+        val uploaded = ArrayList<FileDtoExtender>()
+        val amount = pathAndItFiles.second.size
+        val uploadFlow = GoogleDriveFlow.getUploadFlow(hashMapOf(pathAndItFiles))
+
+        runBlocking {
+            uploadFlow.collect {
+                uploaded.add(it)
+                println("[${uploaded.size}/$amount] ${it.file.type} was saved: ${it.file.path}")
+            }
+        }
     }
-
-    throw RuntimeException("In path '$pathWithIntelliJIdeaMention' was not found presence of string '$postfix'")
 }
 
-private fun getPathRelativeToScratches (filesStringPaths: ArrayList<String>): List<String> {
-    return filesStringPaths
-        .asSequence()
-        .map { it.split(SPLIT_REGEX)[1] }
-        .filter { it.isNotBlank() }
-        .toList()
-}
 
-private fun getFileInfos(filesStringPaths: ArrayList<String>): List<FileInfo> {
-    return filesStringPaths
-        .map { FileInfo(getType(it), it.split(SPLIT_REGEX)[1]) }
-        .filter { it.path.isNotBlank() }
-        .toList()
-}
-
-private fun getType(it: String) = if(isDirectory(it)) UnitType.DIRECTORY else UnitType.FILE
-private fun isDirectory(it: String) = Files.isDirectory(Paths.get(it))

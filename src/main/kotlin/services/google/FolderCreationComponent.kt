@@ -1,14 +1,14 @@
-package drives.google
+package services.google
 
-import GDFile
-import com.google.api.services.drive.model.File
+import GoogleFile
+import utils.GoogleDriveUtils.VND_GOOGLE_APPS_FOLDER
 
 object FolderCreationComponent : GoogleDriveComponent() {
 
-    fun save(folderName: String,
-             parentId: String? = null): File
+    fun create(folderName: String,
+               parentId: String? = null): GoogleFile
     {
-        val fileMetadata = GDFile()
+        val fileMetadata = GoogleFile()
         fileMetadata.name = folderName
         fileMetadata.mimeType = VND_GOOGLE_APPS_FOLDER
         parentId?.let {

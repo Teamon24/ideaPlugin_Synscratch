@@ -1,3 +1,3 @@
-package utils
+package enums
 
 enum class UnitType { DIRECTORY, FILE }

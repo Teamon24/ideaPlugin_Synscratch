@@ -1,6 +1,6 @@
 package services.google
 
-import GoogleFile
+import utils.GoogleFile
 import utils.GoogleDriveUtils.VND_GOOGLE_APPS_FOLDER
 
 object FolderCreationComponent : GoogleDriveComponent() {

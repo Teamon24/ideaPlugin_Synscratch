@@ -1,6 +1,6 @@
 package pojos
 
-data class DriveConfigsPojo(
+data class UserConfigsPojo(
     val user: String,
     val drivesPluginDirName: String,
     val drivesPluginDirId: String?,
@@ -8,6 +8,6 @@ data class DriveConfigsPojo(
 )
 
 data class UploadDownloadMapping(
-    val upload: String,
-    val download: String?
+    val uploadFrom: String,
+    val downloadTo: String?
 )

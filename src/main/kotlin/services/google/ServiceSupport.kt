@@ -1,7 +1,7 @@
 package services.google
 
-import GoogleFile
-import JFile
+import utils.GoogleFile
+import utils.JFile
 import dtos.FileDto
 import dtos.FileDtoExtender
 import enums.UnitType

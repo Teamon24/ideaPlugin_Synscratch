@@ -17,7 +17,7 @@ object GoogleDriveFlow : DriveFlow {
                 val filesLocalStringPath = scratchStringPath.dropLastDir()
                 findSimpleDirAndSaveItsFiles(
                     fileInfoExtender,
-                    GoogleDriveConfigs.drivesPluginStashId(),
+                    GoogleDriveConfigs.drivesPluginStashId,
                     filesLocalStringPath = filesLocalStringPath
                 )
             }

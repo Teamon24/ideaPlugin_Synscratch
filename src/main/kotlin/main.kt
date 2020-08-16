@@ -4,20 +4,24 @@ import kotlinx.coroutines.runBlocking
 import services.google.GoogleDriveFlow
 import services.google.GoogleDriveService
 import utils.FileDtoUtils
+import utils.Initializer
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.streams.toList
 
-
 fun main() {
 
-    GoogleDriveConfigs.initDrivesPluginStash()
+    runBlocking {
+        Initializer.getInitializationFlow().collect {
+            println(it)
+        }
+    }
 
     val uploadDownloadMappings = GoogleDriveConfigs.getUploadDownloadMappings()
 
     val allUploadDirs =
         uploadDownloadMappings
-            .map { it.upload }
+            .map { it.uploadFrom }
             .dropLastWhile { it == "/" }
 
     val firstDirToUpload = allUploadDirs[0]

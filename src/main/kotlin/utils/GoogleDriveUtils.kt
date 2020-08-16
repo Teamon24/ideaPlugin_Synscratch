@@ -1,8 +1,7 @@
 package utils
 
+import DriveConfigs.Companion.drivePluginUserDir
 import GoogleDriveConfigs
-import GoogleDriveConfigs.drivePluginUserDir
-import GoogleDriveConfigs.userHome
 import com.google.api.client.auth.oauth2.Credential
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
@@ -29,7 +28,7 @@ object GoogleDriveUtils {
 
     private const val LOCAL_SERVER_RECEIVER_PORT = 10077
     private const val APPLICATION_NAME = "Save Scratches"
-    private val TOKENS_DIRECTORY_PATH = "${userHome}/$drivePluginUserDir/tokens"
+    private val TOKENS_DIRECTORY_PATH = "${DriveConfigs.USER_HOME}/$drivePluginUserDir/tokens"
     private const val CREDENTIALS_FILE_PATH = "/credentials.json"
     private const val ACCESS_TYPE = "offline"
 
@@ -69,7 +68,7 @@ object GoogleDriveUtils {
         // Build flow and trigger user authorization request.
         val flow = getFlow(httpTransport, clientSecrets)
         val receiver = LocalServerReceiver.Builder().setPort(LOCAL_SERVER_RECEIVER_PORT).build()
-        return AuthorizationCodeInstalledApp(flow, receiver).authorize(GoogleDriveConfigs.configs.user)
+        return AuthorizationCodeInstalledApp(flow, receiver).authorize(GoogleDriveConfigs.userConfigs!!.user)
     }
 
     fun getClientSecrets(): GoogleClientSecrets {

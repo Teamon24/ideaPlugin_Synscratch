@@ -1,64 +1,49 @@
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import pojos.DriveConfigsPojo
 import pojos.UploadDownloadMapping
+import pojos.UserConfigsPojo
 import services.google.FolderCreationComponent
-import services.google.SearchComponent
+import services.google.GoogleDriveSearchComponent
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Paths
 
-object GoogleDriveConfigs {
+object GoogleDriveConfigs: DriveConfigs() {
 
+    val drivePluginStashName = getDrivesPluginStashName()
+    var drivesPluginStashId: String? = null
+    const val jsonConfigsFileName = "drive.google.json"
+    var userConfigs: UserConfigsPojo? = null
 
-    const val drivePluginUserDir = ".DrivesPlugin2020.01"
-    val configs: DriveConfigsPojo
-
-    val userHome: String
-    private val drivePluginStashName: String
-    private val objectMapper: ObjectMapper
-    private var drivePluginStashId: String? = null
-
-    init {
-        userHome = getUserHomeFromConfigs()
-        objectMapper = kotlinObjectMapper()
-        drivePluginStashName = getDrivesPluginDirFromConfigs()
-
-
-        val fileUrl = URL("file:${this.userHome}/$drivePluginUserDir/config/drive.google.json")
-        configs = this.objectMapper.readValue(fileUrl, DriveConfigsPojo::class.java)
+    fun initDrivesPluginStash(): Boolean {
+        val dirs = GoogleDriveSearchComponent.getDirs(drivePluginStashName)
+        val stashIsAbsent = dirs.isEmpty() || dirs.first().name != drivePluginStashName
+        drivesPluginStashId = if (stashIsAbsent) {
+            val googleFile = FolderCreationComponent.create(drivePluginStashName, null)
+            googleFile.id
+        } else {
+            dirs.first().id
+        }
+        return stashIsAbsent
     }
 
-    fun initDrivesPluginStash() {
-        val dirs = SearchComponent.getDirs(this.drivePluginStashName)
-        if (dirs.isEmpty() || dirs.first().name != this.drivePluginStashName) {
-            val googleFile = FolderCreationComponent.create(this.drivePluginStashName, null)
-            drivePluginStashId = googleFile.id
-            println("${this.drivePluginStashName} folder was create.")
+    private fun getDrivesPluginStashName(): String {
+        return "DRIVES_PLUGIN_STASH"
+    }
+
+    fun initUserConfigs(): Boolean {
+        val jsonConfigStringPath = "$userConfigDir/$jsonConfigsFileName"
+        val jsonConfigPath = Paths.get(jsonConfigStringPath)
+        return if (Files.exists(jsonConfigPath)) {
+            val fileUrl = URL("file:$jsonConfigStringPath")
+            this.userConfigs = this.objectMapper.readValue(fileUrl, UserConfigsPojo::class.java)
+            false
         } else {
-            drivePluginStashId = dirs.first().id
-            println("${this.drivePluginStashName} folder has already been created.")
+            Files.createFile(jsonConfigPath)
+            jsonConfigPath.toFile().writeText("""{"user":"empty_one", "drivesPluginDirName": "DRIVES_PLUGIN_DEFAULT_NAME", "uploadDownloadMapping": []}""")
+            true
         }
     }
 
-    fun drivesPluginStashId() = this.drivePluginStashId!!
-
-    fun kotlinObjectMapper(): ObjectMapper {
-        val mapper = ObjectMapper()
-        mapper.registerModule(KotlinModule())
-        //mapper.propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE;
-        //mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true)
-        //mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        return mapper
-    }
-
     fun getUploadDownloadMappings(): List<UploadDownloadMapping> {
-        return this.configs.uploadDownloadMapping
-    }
-
-    private fun getUserHomeFromConfigs(): String {
-        return "/home/artem"
-    }
-
-    private fun getDrivesPluginDirFromConfigs(): String {
-        return "DRIVES_PLUGIN_STASH"
+        return this.userConfigs!!.uploadDownloadMapping
     }
 }

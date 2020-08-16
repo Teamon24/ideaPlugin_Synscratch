@@ -1,7 +1,7 @@
 package services.google
 
-import GoogleFile
-import JFile
+import utils.GoogleFile
+import utils.JFile
 import com.google.api.client.http.AbstractInputStreamContent
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.client.http.FileContent

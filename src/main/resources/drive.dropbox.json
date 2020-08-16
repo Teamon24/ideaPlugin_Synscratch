@@ -1,0 +1,18 @@
+{
+  "user":"emptyOne",
+  "drivesPluginDirName": "DRIVES_PLUGIN",	
+  "uploadDownloadMapping": [
+    {
+      "uploadFrom": "/home/artem/drives_plugin",
+      "downloadTo": "/home/artem/drives_plugin_download"
+    },
+    {
+      "uploadFrom": "/home/artem/drives_plugin/upload",
+      "downloadTo": "/home/artem/drives_plugin/download"
+    },
+    {
+      "uploadFrom": "/home/artem/drives_plugin/upload_2",
+      "downloadTo": "/home/artem/drives_plugin/download_2"
+    }
+  ]
+}

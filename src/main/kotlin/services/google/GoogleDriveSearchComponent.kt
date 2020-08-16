@@ -1,11 +1,11 @@
 package services.google
 
-import GoogleFile
+import utils.GoogleFile
 import com.google.api.services.drive.model.FileList
 import utils.GoogleDriveUtils
 import utils.GoogleDriveUtils.VND_GOOGLE_APPS_FOLDER
 
-object SearchComponent : GoogleDriveComponent() {
+object GoogleDriveSearchComponent : GoogleDriveComponent() {
 
     fun getFiles(fileName: String): List<GoogleFile> {
         var pageToken: String? = null
